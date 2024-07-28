@@ -20,7 +20,7 @@ type UserProfile = {
   image: string | null;
   fullSlackMember: boolean | null;
   avatar: string;
-  webring: [];
+  webring: string[]; // TODO: find a user with webring
   newMember: false;
   timezoneOffset: number;
 
@@ -37,6 +37,8 @@ type UserProfile = {
 type UserPageData = {
   profile: UserProfile;
 };
+
+type Post = {};
 
 export class ScrapbookApi {
   sessionToken: string | null;
@@ -63,11 +65,37 @@ export class ScrapbookApi {
    * const user = await api.getUserPageData("SkyfallWasTaken");
    * console.log(`${user.profile.username}'s most recent post text is: ${user.posts[0].text}`);
    * ```
+   *
+   * @param username Username of the person to look up
    * */
   async getUserPageData(username: string): Promise<UserPageData> {
     const response = await fetch(`${API_ROOT}/users/${username}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch user \`${username}\``);
+    }
+    return response.json();
+  }
+
+  /**
+   * Get posts where the user is mentioned. **Unauthenticated endpoint.*
+   *
+   *
+   * ## Example
+   * ```typescript
+   * const api = new ScrapbookApi();
+   * const user = await api.getUserMentions("SkyfallWasTaken");
+   * console.log(`${user.profile.username} has been mentioned in ${user.posts.length} posts!`);
+   * ```
+   *
+   * @param username Username of the person to look up
+   */
+  async getUserMentions(username: string): Promise<{
+    profile: UserProfile;
+    posts: Post[];
+  }> {
+    const response = await fetch(`${API_ROOT}/users/${username}/mentions`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch mentions for user \`${username}\``);
     }
     return response.json();
   }
